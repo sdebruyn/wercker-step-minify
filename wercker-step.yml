@@ -1,0 +1,11 @@
+name: minify
+version: 0.0.1
+description: |
+    This step minifies static resources like HTML, CSS and JS files.
+keywords:
+  - minify
+  - min
+  - compress
+  - static
+  - hugo
+  - jekyll
