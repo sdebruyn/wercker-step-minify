@@ -16,7 +16,7 @@ if [ ! -n "$WERCKER_MINIFY_BASEDIR" ]; then
 fi
 
 # set arguments if not set
-DEFAULTARGS="--use-short-doctype --remove-style-link-type-attributes --remove-script-type-attributes --remove-comments --minify-css --minify-js --collapse-whitespace"
+DEFAULTARGS="--use-short-doctype --remove-style-link-type-attributes --remove-script-type-attributes --remove-comments --minify-css --minify-js --collapse-whitespace --remove-comments-from-cdata --conservative-collapse --remove-cdatasections-from-cdata"
 if [ ! -n "$WERCKER_MINIFY_HTMLARGS" ]; then
     export WERCKER_MINIFY_HTMLARGS="$DEFAULTARGS"
 fi
