@@ -26,3 +26,6 @@ fi
 
 # install the HTML minifier
 npm install html-minifier -g
+
+# minify all the HTML files
+find public -iname *.html -print0 | xargs -0 -P 4 -n 1 -I filename html-minifier --use-short-doctype --remove-style-link-type-attributes --remove-script-type-attributes --remove-comments --minify-css --minify-js --collapse-whitespace -o filename filename

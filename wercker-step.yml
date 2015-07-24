@@ -1,5 +1,5 @@
 name: minify
-version: 0.0.3
+version: 0.0.4
 description: |
     This step minifies static resources like HTML, CSS and JS files.
 keywords:
