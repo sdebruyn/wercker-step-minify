@@ -21,6 +21,10 @@ if [ ! -n "$WERCKER_MINIFY_HTMLARGS" ]; then
     export WERCKER_MINIFY_HTMLARGS="$DEFAULTARGS"
 fi
 
+if [ ! -n "$WERCKER_MINIFY_YUIARGS" ]; then
+    export WERCKER_MINIFY_YUIARGS=""
+fi
+
 # check if node is installed
 if [ "$(which node)" == "" ]; then
 
@@ -54,3 +58,23 @@ npm install html-minifier -g
 echo "minifying HTML files in $WERCKER_MINIFY_BASEDIR with arguments $WERCKER_MINIFY_HTMLARGS"
 
 find ${WERCKER_MINIFY_BASEDIR} -iname *.html -print0 | xargs -0 -P ${WERCKER_MINIFY_THREADS} -n 1 -I filename html-minifier ${WERCKER_MINIFY_HTMLARGS} -o filename filename
+
+# check if java is installed
+if [ "$(which java)" == "" ]; then
+    echo java not installed, installing...
+    if [ "$(which apt-get)" != "" ]; then
+        apt-get update
+        apt-get install -y openjdk-7-jre
+    else
+        yum install -y java-1.7.0-openjdk
+    fi
+fi
+
+# install yui-compressor
+echo installing yui-compressor with npm
+npm install yui-compressor -g
+
+# minify all the CSS and JS files
+echo "minifying CSS and JS files in $WERCKER_MINIFY_BASEDIR with arguments $WERCKER_MINIFY_YUIARGS"
+
+find ${WERCKER_MINIFY_BASEDIR} -iname *.css -print0 -or -iname *.js -print0 | xargs -0 -n 1 -P ${WERCKER_MINIFY_THREADS} -I filename yui-compressor ${WERCKER_MINIFY_YUIARGS} -o filename filename
