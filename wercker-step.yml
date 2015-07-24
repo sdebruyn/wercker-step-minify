@@ -1,5 +1,5 @@
 name: minify
-version: 0.1.0
+version: 0.1.1
 description: |
     This step minifies static resources like HTML, CSS and JS files.
 keywords:
@@ -16,7 +16,7 @@ properties:
         required: false
     threads:
         type: string
-        default: "4"
+        default: ""
         required: false
     htmlargs:
         type: string
