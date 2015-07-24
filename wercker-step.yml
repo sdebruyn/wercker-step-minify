@@ -1,5 +1,5 @@
 name: minify
-version: 0.0.5
+version: 0.1.0
 description: |
     This step minifies static resources like HTML, CSS and JS files.
 keywords:
@@ -9,3 +9,16 @@ keywords:
   - static
   - hugo
   - jekyll
+properties:
+    basedir:
+        type: string
+        default: "public"
+        required: false
+    threads:
+        type: string
+        default: "4"
+        required: false
+    htmlargs:
+        type: string
+        default: "--use-short-doctype --remove-style-link-type-attributes --remove-script-type-attributes --remove-comments --minify-css --minify-js --collapse-whitespace"
+        required: false
