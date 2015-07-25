@@ -2,6 +2,7 @@
 set -e
 
 FAILED=false
+APT_GET_UPDATED=false
 
 minifyHTML()
 {
@@ -16,7 +17,7 @@ minifyCSSJS()
     # minify all the CSS and JS files
     echo "minifying CSS and JS files in $WERCKER_MINIFY_BASEDIR with arguments $WERCKER_MINIFY_YUIARGS"
     
-    find ${WERCKER_MINIFY_BASEDIR} -iname *.css -print0 -or -iname *.js -print0 | xargs -0 -t -n 1 -P ${WERCKER_MINIFY_THREADS} -I filename ${YUI_COMMAND} ${WERCKER_MINIFY_YUIARGS} -o filename filename
+    find ${WERCKER_MINIFY_BASEDIR} -type f \( -iname \*.js -o -iname \*.css \) -print0 | xargs -0 -t -n 1 -P ${WERCKER_MINIFY_THREADS} -I filename ${YUI_COMMAND} ${WERCKER_MINIFY_YUIARGS} -o filename filename
 }
 
 # set amount of threads if not set
@@ -50,7 +51,12 @@ if [ "$(which node)" == "" ]; then
     if [ "$(which curl)" == "" ]; then
         echo curl not installed, installing...
         if [ "$(which apt-get)" != "" ]; then
-            apt-get update
+            
+            if [ "$APT_GET_UPDATED" = false ] ; then
+                apt-get update
+                APT_GET_UPDATED=true
+            fi            
+            
             apt-get install -y curl
         else
             yum install -y curl
@@ -84,7 +90,12 @@ fi
 if [ "$(which java)" == "" ]; then
     echo java not installed, installing...
     if [ "$(which apt-get)" != "" ]; then
-        apt-get update
+        
+        if [ "$APT_GET_UPDATED" = false ] ; then
+            apt-get update
+            APT_GET_UPDATED=true
+        fi            
+            
         apt-get install -y openjdk-7-jre
     else
         yum install -y java-1.7.0-openjdk
@@ -98,12 +109,35 @@ npm install yui-compressor -g
 # verify yui-compressor installation
 if [ "$(which yui-compressor)" == "" ]; then
     echo yui-compressor installation failed, retrying with a jar file...
+    
+    # check if curl is installed
+    if [ "$(which curl)" == "" ]; then
+        echo curl not installed, installing...
+        if [ "$(which apt-get)" != "" ]; then
+            
+            if [ "$APT_GET_UPDATED" = false ] ; then
+                apt-get update
+                APT_GET_UPDATED=true
+            fi            
+            
+            apt-get install -y curl
+        else
+            yum install -y curl
+        fi
+    fi
+    
     curl -L https://github.com/yui/yuicompressor/releases/download/v2.4.8/yuicompressor-2.4.8.jar -o yui.jar
     export YUI_COMMAND="java -jar yui.jar"
+    
     minifyCSSJS
 else
     export YUI_COMMAND="yui-compressor"
     minifyCSSJS
 fi
 
-if $FAILED ; then exit 1 ; fi
+if [ "$FAILED" = true ] ; then
+    echo "Not all tasks were succesfully completed."
+    exit 1
+fi
+
+exit 0
