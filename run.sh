@@ -3,7 +3,7 @@ set -e
 
 FAILED=false
 
-function minifyHTML
+minifyHTML()
 {
     # minify all the HTML files
     echo "minifying HTML files in $WERCKER_MINIFY_BASEDIR with arguments $WERCKER_MINIFY_HTMLARGS"
@@ -11,7 +11,7 @@ function minifyHTML
     find ${WERCKER_MINIFY_BASEDIR} -iname *.html -print0 | xargs -0 -t -P ${WERCKER_MINIFY_THREADS} -n 1 -I filename html-minifier ${WERCKER_MINIFY_HTMLARGS} -o filename filename
 }
 
-function minifyCSSJS
+minifyCSSJS()
 {
     # minify all the CSS and JS files
     echo "minifying CSS and JS files in $WERCKER_MINIFY_BASEDIR with arguments $WERCKER_MINIFY_YUIARGS"
