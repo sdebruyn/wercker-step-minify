@@ -1,7 +1,23 @@
 #/bin/bash
 set -e
 
-SUCCESS=true
+FAILED=false
+
+function minifyHTML
+{
+    # minify all the HTML files
+    echo "minifying HTML files in $WERCKER_MINIFY_BASEDIR with arguments $WERCKER_MINIFY_HTMLARGS"
+    
+    find ${WERCKER_MINIFY_BASEDIR} -iname *.html -print0 | xargs -0 -t -P ${WERCKER_MINIFY_THREADS} -n 1 -I filename html-minifier ${WERCKER_MINIFY_HTMLARGS} -o filename filename
+}
+
+function minifyCSSJS
+{
+    # minify all the CSS and JS files
+    echo "minifying CSS and JS files in $WERCKER_MINIFY_BASEDIR with arguments $WERCKER_MINIFY_YUIARGS"
+    
+    find ${WERCKER_MINIFY_BASEDIR} -iname *.css -print0 -or -iname *.js -print0 | xargs -0 -t -n 1 -P ${WERCKER_MINIFY_THREADS} -I filename ${YUI_COMMAND} ${WERCKER_MINIFY_YUIARGS} -o filename filename
+}
 
 # set amount of threads if not set
 CORES=`nproc`
@@ -59,12 +75,9 @@ npm install html-minifier -g
 # verify HTML minifier installation
 if [ "$(which html-minifier)" == "" ]; then
     echo html-minifier installation failed, not minifying HTML
-    SUCCESS=false
+    FAILED=true
 else
-    # minify all the HTML files
-    echo "minifying HTML files in $WERCKER_MINIFY_BASEDIR with arguments $WERCKER_MINIFY_HTMLARGS"
-    
-    find ${WERCKER_MINIFY_BASEDIR} -iname *.html -print0 | xargs -0 -t -P ${WERCKER_MINIFY_THREADS} -n 1 -I filename html-minifier ${WERCKER_MINIFY_HTMLARGS} -o filename filename
+    minifyHTML
 fi
 
 # check if java is installed
@@ -84,13 +97,13 @@ npm install yui-compressor -g
 
 # verify yui-compressor installation
 if [ "$(which yui-compressor)" == "" ]; then
-    echo yui-compressor installation failed, not minifying CSS and JS
-    SUCCESS=false
+    echo yui-compressor installation failed, retrying with a jar file...
+    curl -L https://github.com/yui/yuicompressor/releases/download/v2.4.8/yuicompressor-2.4.8.jar -o yui.jar
+    export YUI_COMMAND="java -jar yui.jar"
+    minifyCSSJS
 else
-    # minify all the CSS and JS files
-    echo "minifying CSS and JS files in $WERCKER_MINIFY_BASEDIR with arguments $WERCKER_MINIFY_YUIARGS"
-    
-    find ${WERCKER_MINIFY_BASEDIR} -iname *.css -print0 -or -iname *.js -print0 | xargs -0 -t -n 1 -P ${WERCKER_MINIFY_THREADS} -I filename yui-compressor ${WERCKER_MINIFY_YUIARGS} -o filename filename
+    export YUI_COMMAND="yui-compressor"
+    minifyCSSJS
 fi
 
-if $SUCCESS ; then exit 1 ; fi
+if $FAILED ; then exit 1 ; fi
