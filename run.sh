@@ -1,6 +1,8 @@
 #/bin/bash
 set -e
 
+SUCCESS=true
+
 # set amount of threads if not set
 CORES=`nproc`
 echo $CORES cores detected
@@ -54,10 +56,16 @@ fi
 echo installing html-minifier with npm
 npm install html-minifier -g
 
-# minify all the HTML files
-echo "minifying HTML files in $WERCKER_MINIFY_BASEDIR with arguments $WERCKER_MINIFY_HTMLARGS"
-
-find ${WERCKER_MINIFY_BASEDIR} -iname *.html -print0 | xargs -0 -P ${WERCKER_MINIFY_THREADS} -n 1 -I filename html-minifier ${WERCKER_MINIFY_HTMLARGS} -o filename filename
+# verify HTML minifier installation
+if [ "$(which html-minifier)" == "" ]; then
+    echo html-minifier installation failed, not minifying HTML
+    SUCCESS=false
+else
+    # minify all the HTML files
+    echo "minifying HTML files in $WERCKER_MINIFY_BASEDIR with arguments $WERCKER_MINIFY_HTMLARGS"
+    
+    find ${WERCKER_MINIFY_BASEDIR} -iname *.html -print0 | xargs -0 -t -P ${WERCKER_MINIFY_THREADS} -n 1 -I filename html-minifier ${WERCKER_MINIFY_HTMLARGS} -o filename filename
+fi
 
 # check if java is installed
 if [ "$(which java)" == "" ]; then
@@ -74,7 +82,15 @@ fi
 echo installing yui-compressor with npm
 npm install yui-compressor -g
 
-# minify all the CSS and JS files
-echo "minifying CSS and JS files in $WERCKER_MINIFY_BASEDIR with arguments $WERCKER_MINIFY_YUIARGS"
+# verify yui-compressor installation
+if [ "$(which yui-compressor)" == "" ]; then
+    echo yui-compressor installation failed, not minifying CSS and JS
+    SUCCESS=false
+else
+    # minify all the CSS and JS files
+    echo "minifying CSS and JS files in $WERCKER_MINIFY_BASEDIR with arguments $WERCKER_MINIFY_YUIARGS"
+    
+    find ${WERCKER_MINIFY_BASEDIR} -iname *.css -print0 -or -iname *.js -print0 | xargs -0 -t -n 1 -P ${WERCKER_MINIFY_THREADS} -I filename yui-compressor ${WERCKER_MINIFY_YUIARGS} -o filename filename
+fi
 
-find ${WERCKER_MINIFY_BASEDIR} -iname *.css -print0 -or -iname *.js -print0 | xargs -0 -n 1 -P ${WERCKER_MINIFY_THREADS} -I filename yui-compressor ${WERCKER_MINIFY_YUIARGS} -o filename filename
+if $SUCCESS ; then exit 1 ; fi
