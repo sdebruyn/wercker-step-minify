@@ -18,6 +18,17 @@ if [ ! -n "$WERCKER_MINIFY_BASEDIR" ]; then
     export WERCKER_MINIFY_BASEDIR=$DEFAULTDIR
 fi
 
+# set minify defaults
+if [ ! -n "$WERCKER_MINIFY_HTML" ]; then
+    export WERCKER_MINIFY_HTML=true
+fi
+if [ ! -n "$WERCKER_MINIFY_CSS" ]; then
+    export WERCKER_MINIFY_CSS=true
+fi
+if [ ! -n "$WERCKER_MINIFY_JS" ]; then
+    export WERCKER_MINIFY_JS=true
+fi
+
 # set arguments if not set
 DEFAULTARGS="--use-short-doctype --remove-style-link-type-attributes --remove-script-type-attributes --remove-comments --minify-css --minify-js --collapse-whitespace --remove-comments-from-cdata --conservative-collapse --remove-cdatasections-from-cdata"
 if [ ! -n "$WERCKER_MINIFY_HTMLARGS" ]; then
@@ -144,22 +155,35 @@ doCSSJS()
         curl -L https://github.com/yui/yuicompressor/releases/download/v2.4.8/yuicompressor-2.4.8.jar -o yui.jar
         export YUI_COMMAND="java -jar yui.jar"
         
-        minifyCSS
-        minifyJS
+        if [ "$WERCKER_MINIFY_CSS" != "false" ]; then
+            minifyCSS
+        fi
+        if [ "$WERCKER_MINIFY_JS" != "false" ]; then
+            minifyJS
+        fi
+        
     else
         export YUI_COMMAND="yui-compressor"
-        minifyCSS
-        minifyJS
+        
+        if [ "$WERCKER_MINIFY_CSS" != "false" ]; then
+            minifyCSS
+        fi
+        if [ "$WERCKER_MINIFY_JS" != "false" ]; then
+            minifyJS
+        fi
+        
     fi
 }
 
-doHTML
+if [ "$WERCKER_MINIFY_HTML" != "false" ]; then
+    doHTML
+fi
 
-doCSSJS
+if [ "$WERCKER_MINIFY_CSS" != "false" ] || [ "$WERCKER_MINIFY_JS" != "false" ] ; then
+    doCSSJS
+fi
 
 if [ "$FAILED" = true ] ; then
     echo "Not all tasks were succesfully completed."
     exit 1
 fi
-
-exit 0
