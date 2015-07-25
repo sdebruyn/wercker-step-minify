@@ -36,12 +36,20 @@ minifyHTML()
     find ${WERCKER_MINIFY_BASEDIR} -iname *.html -print0 | xargs -0 -t -P ${WERCKER_MINIFY_THREADS} -n 1 -I filename html-minifier ${WERCKER_MINIFY_HTMLARGS} -o filename filename
 }
 
-minifyCSSJS()
+minifyCSS()
 {
-    # minify all the CSS and JS files
-    echo "minifying CSS and JS files in $WERCKER_MINIFY_BASEDIR with arguments $WERCKER_MINIFY_YUIARGS"
+    # minify all the CSS files
+    echo "minifying CSS files in $WERCKER_MINIFY_BASEDIR with arguments $WERCKER_MINIFY_YUIARGS"
     
-    find ${WERCKER_MINIFY_BASEDIR} -type f \( -iname \*.js -o -iname \*.css \) -print0 | xargs -0 -t -n 1 -P ${WERCKER_MINIFY_THREADS} -I filename ${YUI_COMMAND} ${WERCKER_MINIFY_YUIARGS} -o filename filename
+    find ${WERCKER_MINIFY_BASEDIR} -iname *.css -print0 | xargs -0 -t -n 1 -P ${WERCKER_MINIFY_THREADS} -I filename ${YUI_COMMAND} ${WERCKER_MINIFY_YUIARGS} -o filename filename
+}
+
+minifyJS()
+{
+    # minify all the JS files
+    echo "minifying JS files in $WERCKER_MINIFY_BASEDIR with arguments $WERCKER_MINIFY_YUIARGS"
+    
+    find ${WERCKER_MINIFY_BASEDIR} -iname *.js -print0 | xargs -0 -t -n 1 -P ${WERCKER_MINIFY_THREADS} -I filename ${YUI_COMMAND} ${WERCKER_MINIFY_YUIARGS} -o filename filename
 }
 
 verifyJava()
@@ -136,10 +144,12 @@ doCSSJS()
         curl -L https://github.com/yui/yuicompressor/releases/download/v2.4.8/yuicompressor-2.4.8.jar -o yui.jar
         export YUI_COMMAND="java -jar yui.jar"
         
-        minifyCSSJS
+        minifyCSS
+        minifyJS
     else
         export YUI_COMMAND="yui-compressor"
-        minifyCSSJS
+        minifyCSS
+        minifyJS
     fi
 }
 
