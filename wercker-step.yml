@@ -1,10 +1,11 @@
 name: minify
-version: 1.1.0
+version: 1.2.0
 description: |
     This step minifies static resources like HTML, CSS and JS files.
 keywords:
   - minify
   - min
+  - uglify
   - compress
   - static
   - hugo
@@ -37,4 +38,16 @@ properties:
     js:
         type: string
         default: "true"
+        required: false
+    htmlext:
+        type: string
+        default: "html"
+        required: false
+    cssext:
+        type: string
+        default: "css"
+        required: false
+    jsext:
+        type: string
+        default: "js"
         required: false

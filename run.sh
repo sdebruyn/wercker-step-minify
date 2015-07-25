@@ -28,6 +28,15 @@ fi
 if [ ! -n "$WERCKER_MINIFY_JS" ]; then
     export WERCKER_MINIFY_JS=true
 fi
+if [ ! -n "$WERCKER_MINIFY_HTMLEXT" ]; then
+    export WERCKER_MINIFY_HTMLEXT="html"
+fi
+if [ ! -n "$WERCKER_MINIFY_CSSEXT" ]; then
+    export WERCKER_MINIFY_CSSEXT="css"
+fi
+if [ ! -n "$WERCKER_MINIFY_JSEXT" ]; then
+    export WERCKER_MINIFY_JSEXT="js"
+fi
 
 # set arguments if not set
 DEFAULTARGS="--use-short-doctype --remove-style-link-type-attributes --remove-script-type-attributes --remove-comments --minify-css --minify-js --collapse-whitespace --remove-comments-from-cdata --conservative-collapse --remove-cdatasections-from-cdata"
@@ -42,25 +51,25 @@ fi
 minifyHTML()
 {
     # minify all the HTML files
-    echo "minifying HTML files in $WERCKER_MINIFY_BASEDIR with arguments $WERCKER_MINIFY_HTMLARGS"
+    echo "minifying HTML files with extension $WERCKER_MINIFY_HTMLEXT in $WERCKER_MINIFY_BASEDIR with arguments $WERCKER_MINIFY_HTMLARGS"
     
-    find ${WERCKER_MINIFY_BASEDIR} -iname *.html -print0 | xargs -0 -t -P ${WERCKER_MINIFY_THREADS} -n 1 -I filename html-minifier ${WERCKER_MINIFY_HTMLARGS} -o filename filename
+    find ${WERCKER_MINIFY_BASEDIR} -iname *.${WERCKER_MINIFY_HTMLEXT} -print0 | xargs -0 -t -P ${WERCKER_MINIFY_THREADS} -n 1 -I filename html-minifier ${WERCKER_MINIFY_HTMLARGS} -o filename filename
 }
 
 minifyCSS()
 {
     # minify all the CSS files
-    echo "minifying CSS files in $WERCKER_MINIFY_BASEDIR with arguments $WERCKER_MINIFY_YUIARGS"
+    echo "minifying CSS files with extension $WERCKER_MINIFY_CSSEXT in $WERCKER_MINIFY_BASEDIR with arguments $WERCKER_MINIFY_YUIARGS"
     
-    find ${WERCKER_MINIFY_BASEDIR} -iname *.css -print0 | xargs -0 -t -n 1 -P ${WERCKER_MINIFY_THREADS} -I filename ${YUI_COMMAND} ${WERCKER_MINIFY_YUIARGS} -o filename filename
+    find ${WERCKER_MINIFY_BASEDIR} -iname *.${WERCKER_MINIFY_CSSEXT} -print0 | xargs -0 -t -n 1 -P ${WERCKER_MINIFY_THREADS} -I filename ${YUI_COMMAND} ${WERCKER_MINIFY_YUIARGS} -o filename filename
 }
 
 minifyJS()
 {
     # minify all the JS files
-    echo "minifying JS files in $WERCKER_MINIFY_BASEDIR with arguments $WERCKER_MINIFY_YUIARGS"
+    echo "minifying JS files with extension $WERCKER_MINIFY_JSEXT in $WERCKER_MINIFY_BASEDIR with arguments $WERCKER_MINIFY_YUIARGS"
     
-    find ${WERCKER_MINIFY_BASEDIR} -iname *.js -print0 | xargs -0 -t -n 1 -P ${WERCKER_MINIFY_THREADS} -I filename ${YUI_COMMAND} ${WERCKER_MINIFY_YUIARGS} -o filename filename
+    find ${WERCKER_MINIFY_BASEDIR} -iname *.${WERCKER_MINIFY_JSEXT} -print0 | xargs -0 -t -n 1 -P ${WERCKER_MINIFY_THREADS} -I filename ${YUI_COMMAND} ${WERCKER_MINIFY_YUIARGS} -o filename filename
 }
 
 verifyJava()

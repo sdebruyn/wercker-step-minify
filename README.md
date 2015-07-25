@@ -16,6 +16,9 @@ All parameters are optional. Don't put them in your *wercker.yml* to use the def
 * `html`: Set this to `false` to disable HTML minification. *Default is `true`.*
 * `css`: Set this to `false` to disable CSS minification (CSS in HTML files will still be minified if you don't change `html` or `htmlargs`). *Default is `true`*
 * `js`: Set this to `false` to disable JS minification (JS in HTML files will still be minified if you don't change `html` or `htmlargs`). *Default is `true`*
+* `htmlext`: The extension of the HTML files to be minified. Default is `html`.
+* `cssext`: The extension of the CSS files to be minified. Default is `css`.
+* `jsext`: The extension of the JS files to be minified. Default is `js`.
 
 ### New Wercker (*ewok*) infrastructure example (with Docker)
 
