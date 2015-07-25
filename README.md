@@ -9,10 +9,13 @@ This step is designed to be used with a static site generator like [Jekyll](http
 
 All parameters are optional. Don't put them in your *wercker.yml* to use the default values.
 
-* `basedir`: The directory containing the website to be minified. *Default is `public`*
+* `basedir`: The directory containing the website to be minified. *Default is `public`.*
 * `threads`: The number of simultaneous operations. Put this between quotes (e.g. *"4"*). *Default is the number of cores of the host.*
 * `htmlargs`: The arguments for [html-minifier](https://github.com/kangax/html-minifier). *Default is `--use-short-doctype --remove-style-link-type-attributes --remove-script-type-attributes --remove-comments --minify-css --minify-js --collapse-whitespace --remove-comments-from-cdata --conservative-collapse --remove-cdatasections-from-cdata`.*
 * `yuiargs`: The arguments for [yui-compressor](https://github.com/yui/yuicompressor). *No arguments by default.*
+* `html`: Set this to `false` to disable HTML minification. *Default is `true`.*
+* `css`: Set this to `false` to disable CSS minification (CSS in HTML files will still be minified if you don't change `html` or `htmlargs`). *Default is `true`*
+* `js`: Set this to `false` to disable JS minification (JS in HTML files will still be minified if you don't change `html` or `htmlargs`). *Default is `true`*
 
 ### New Wercker (*ewok*) infrastructure example (with Docker)
 
@@ -22,7 +25,6 @@ All parameters are optional. Don't put them in your *wercker.yml* to use the def
 	    - samueldebruyn/minify:
 	        basedir: _site
 	        threads: "3"
-			htmlargs: --remove-style-link-type-attributes --remove-script-type-attributes --remove-comments
 
 ### Old Wercker infrastructure example
 
@@ -32,13 +34,12 @@ All parameters are optional. Don't put them in your *wercker.yml* to use the def
 	    - samueldebruyn/minify:
 	        basedir: _site
 	        threads: "3"
-			htmlargs: --remove-style-link-type-attributes --remove-script-type-attributes --remove-comments
 
 ## How it works
 
-This script uses [html-minifier](https://github.com/kangax/html-minifier) to minify HTML files and [yui-compressor](https://github.com/yui/yuicompressor) to minify CSS and JS files. This also means that the script installs node and java if they aren't already installed.
+This script uses [html-minifier](https://github.com/kangax/html-minifier) to minify HTML files and [yui-compressor](https://github.com/yui/yuicompressor) to minify CSS and JS files. This also means that the script installs node, curl and java if they aren't already installed.
 
-The script should work on any OS using *apt-get* or *yum*.
+The script should work on any OS using *apt-get* or *yum* as package managers.
 
 ## Contributing and license
 

@@ -1,5 +1,5 @@
 name: minify
-version: 1.0.4
+version: 1.1.0
 description: |
     This step minifies static resources like HTML, CSS and JS files.
 keywords:
@@ -25,4 +25,16 @@ properties:
     yuiargs:
         type: string
         default: ""
+        required: false
+    html:
+        type: string
+        default: "true"
+        required: false
+    css:
+        type: string
+        default: "true"
+        required: false
+    js:
+        type: string
+        default: "true"
         required: false
