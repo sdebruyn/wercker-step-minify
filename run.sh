@@ -151,13 +151,13 @@ doCSSJS()
 {
     verifyJava
     
-    # install yui-compressor
-    echo "installing yui-compressor with npm"
-    npm install yui-compressor -g
+    # install yuicompressor
+    echo "installing yuicompressor with npm"
+    npm install yuicompressor -g
     
-    # verify yui-compressor installation
-    if [ "$(which yui-compressor)" == "" ]; then
-        echo "yui-compressor installation failed, retrying with a jar file..."
+    # verify yuicompressor installation
+    if [ "$(which yuicompressor)" == "" ]; then
+        echo "yuicompressor installation failed, retrying with a jar file..."
         
         verifyCurl
         
@@ -172,7 +172,7 @@ doCSSJS()
         fi
         
     else
-        export YUI_COMMAND="yui-compressor"
+        export YUI_COMMAND="yuicompressor"
         
         if [ "$WERCKER_MINIFY_CSS" != "false" ]; then
             minifyCSS
