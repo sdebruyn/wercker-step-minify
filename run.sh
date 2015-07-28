@@ -51,6 +51,20 @@ fi
 command_exists()
 {
     hash "$1" 2>/dev/null
+}
+
+verifyYUI()
+{
+    if command_exists yuicompressor; then
+        export YUI_COMMAND="yuicompressor"
+    else if command_exists yui-compressor; then
+        export YUI_COMMAND="yui-compressor"
+    else
+        verifyJava
+        verifyCurl
+        curl -L https://github.com/yui/yuicompressor/releases/download/v2.4.8/yuicompressor-2.4.8.jar -o yui.jar
+        export YUI_COMMAND="java -jar yui.jar"
+    fi
 }   
 
 minifyHTML()
@@ -125,23 +139,24 @@ verifyNode()
         # install node
         echo "node not installed, installing..."
         if command_exists apt-get; then
-    		curl --silent --location https://deb.nodesource.com/setup_0.12 | bash -
+    		curl -sL https://deb.nodesource.com/setup_0.12 | bash -
             export APT_GET_UPDATED=true
-            apt-get install -y npm nodejs build-essential
+            apt-get install -y nodejs build-essential
         else
-            curl --silent --location https://rpm.nodesource.com/setup | bash -
-            yum install -y nodejs npm gcc-c++ make
+            curl -sL https://rpm.nodesource.com/setup | bash -
+            yum install -y nodejs gcc-c++ make
         fi
     fi
 }
 
 doHTML()
 {
-    verifyNode
-    
-    # install the HTML minifier
-    echo "installing html-minifier with npm"
-    npm install html-minifier -g
+    if ! command_exists html-minifier; then
+        # install the HTML minifier
+        echo "installing html-minifier with npm"
+        verifyNode
+        npm install html-minifier -g
+    fi
     
     # verify HTML minifier installation
     if ! command_exists html-minifier; then
@@ -154,38 +169,27 @@ doHTML()
 
 doCSSJS()
 {
-    verifyJava
+    echo "installing yuicompressor..."
     
-    # install yuicompressor
-    echo "installing yuicompressor with npm"
-    npm install yuicompressor -g
+    if (! command_exists yuicompressor) && (! command_exists yui-compressor); then
+        if command_exists apt-get; then
+            if [ "$APT_GET_UPDATED" = false ] ; then
+                apt-get update
+                export APT_GET_UPDATED=true
+            fi
+            apt-get -y install yui-compressor 2>/dev/null
+        fi
+        if (! command_exists yuicompressor) && (! command_exists yui-compressor); then
+            npm install yuicompressor -g
+        fi
+        verifyYUI
+    fi
     
-    # verify yuicompressor installation
-    if ! command_exists yuicompressor; then
-        echo "yuicompressor installation failed, retrying with a jar file..."
-        
-        verifyCurl
-        
-        curl -L https://github.com/yui/yuicompressor/releases/download/v2.4.8/yuicompressor-2.4.8.jar -o yui.jar
-        export YUI_COMMAND="java -jar yui.jar"
-        
-        if [ "$WERCKER_MINIFY_CSS" != "false" ]; then
-            minifyCSS
-        fi
-        if [ "$WERCKER_MINIFY_JS" != "false" ]; then
-            minifyJS
-        fi
-        
-    else
-        export YUI_COMMAND="yuicompressor"
-        
-        if [ "$WERCKER_MINIFY_CSS" != "false" ]; then
-            minifyCSS
-        fi
-        if [ "$WERCKER_MINIFY_JS" != "false" ]; then
-            minifyJS
-        fi
-        
+    if [ "$WERCKER_MINIFY_CSS" != "false" ]; then
+        minifyCSS
+    fi
+    if [ "$WERCKER_MINIFY_JS" != "false" ]; then
+        minifyJS
     fi
 }
 
