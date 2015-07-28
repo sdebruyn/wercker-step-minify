@@ -50,6 +50,7 @@ fi
 
 command_exists()
 {
+    echo "checking if $1 is installed..."
     hash "$1" 2>/dev/null
 }
 
