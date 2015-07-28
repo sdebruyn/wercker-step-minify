@@ -60,8 +60,10 @@ verifyYUI()
     elif command_exists yui-compressor; then
         export YUI_COMMAND="yui-compressor"
     else
+        echo "installing yuicompressor with java..."
         verifyJava
         verifyCurl
+        echo "downloading yuicompressor with curl..."
         curl -L https://github.com/yui/yuicompressor/releases/download/v2.4.8/yuicompressor-2.4.8.jar -o yui.jar
         export YUI_COMMAND="java -jar yui.jar"
     fi
@@ -78,7 +80,7 @@ minifyHTML()
 minifyCSS()
 {
     # minify all the CSS files
-    echo "minifying CSS files with extension $WERCKER_MINIFY_CSSEXT in $WERCKER_MINIFY_BASEDIR with arguments $WERCKER_MINIFY_YUIARGS"
+    echo "minifying CSS files with extension $WERCKER_MINIFY_CSSEXT in $WERCKER_MINIFY_BASEDIR with arguments $WERCKER_MINIFY_YUIARGS and command $YUI_COMMAND"
     
     find ${WERCKER_MINIFY_BASEDIR} -iname *.${WERCKER_MINIFY_CSSEXT} -print0 | xargs -0 -t -n 1 -P ${WERCKER_MINIFY_THREADS} -I filename ${YUI_COMMAND} ${WERCKER_MINIFY_YUIARGS} -o filename filename
 }
@@ -86,7 +88,7 @@ minifyCSS()
 minifyJS()
 {
     # minify all the JS files
-    echo "minifying JS files with extension $WERCKER_MINIFY_JSEXT in $WERCKER_MINIFY_BASEDIR with arguments $WERCKER_MINIFY_YUIARGS"
+    echo "minifying JS files with extension $WERCKER_MINIFY_JSEXT in $WERCKER_MINIFY_BASEDIR with arguments $WERCKER_MINIFY_YUIARGS and command $YUI_COMMAND"
     
     find ${WERCKER_MINIFY_BASEDIR} -iname *.${WERCKER_MINIFY_JSEXT} -print0 | xargs -0 -t -n 1 -P ${WERCKER_MINIFY_THREADS} -I filename ${YUI_COMMAND} ${WERCKER_MINIFY_YUIARGS} -o filename filename
 }
@@ -180,6 +182,7 @@ doCSSJS()
             apt-get -y install yui-compressor 2>/dev/null
         fi
         if (! command_exists yuicompressor) && (! command_exists yui-compressor); then
+            echo "installing yuicompressor with npm..."
             npm install yuicompressor -g
         fi
         verifyYUI
