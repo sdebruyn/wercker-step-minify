@@ -186,8 +186,9 @@ doCSSJS()
             echo "installing yuicompressor with npm..."
             npm install yuicompressor -g
         fi
-        verifyYUI
     fi
+    
+    verifyYUI
     
     if [ "$WERCKER_MINIFY_CSS" != "false" ]; then
         minifyCSS
