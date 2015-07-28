@@ -57,7 +57,7 @@ verifyYUI()
 {
     if command_exists yuicompressor; then
         export YUI_COMMAND="yuicompressor"
-    else if command_exists yui-compressor; then
+    elif command_exists yui-compressor; then
         export YUI_COMMAND="yui-compressor"
     else
         verifyJava
@@ -65,7 +65,7 @@ verifyYUI()
         curl -L https://github.com/yui/yuicompressor/releases/download/v2.4.8/yuicompressor-2.4.8.jar -o yui.jar
         export YUI_COMMAND="java -jar yui.jar"
     fi
-}   
+}
 
 minifyHTML()
 {
