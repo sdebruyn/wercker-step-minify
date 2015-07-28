@@ -48,6 +48,11 @@ if [ ! -n "$WERCKER_MINIFY_YUIARGS" ]; then
     export WERCKER_MINIFY_YUIARGS=""
 fi
 
+command_exists()
+{
+    hash "$1" 2>/dev/null
+}   
+
 minifyHTML()
 {
     # minify all the HTML files
@@ -75,9 +80,9 @@ minifyJS()
 verifyJava()
 {
     # check if java is installed
-    if [ "$(which java)" == "" ]; then
+    if ! command_exists java; then
         echo "java not installed, installing..."
-        if [ "$(which apt-get)" != "" ]; then
+        if command_exists apt-get; then
             
             if [ "$APT_GET_UPDATED" = false ] ; then
                 apt-get update
@@ -94,9 +99,9 @@ verifyJava()
 verifyCurl()
 {
     # check if curl is installed
-    if [ "$(which curl)" == "" ]; then
+    if ! command_exists curl; then
         echo "curl not installed, installing..."
-        if [ "$(which apt-get)" != "" ]; then
+        if command_exists apt-get; then
             
             if [ "$APT_GET_UPDATED" = false ] ; then
                 apt-get update
@@ -113,13 +118,13 @@ verifyCurl()
 verifyNode()
 {
     # check if node is installed
-    if [ "$(which node)" == "" ]; then
+    if ! command_exists node; then
     
         verifyCurl
     
         # install node
         echo "node not installed, installing..."
-        if [ "$(which apt-get)" != "" ]; then
+        if command_exists apt-get; then
     		curl --silent --location https://deb.nodesource.com/setup_0.12 | bash -
             export APT_GET_UPDATED=true
             apt-get install -y npm nodejs build-essential
@@ -139,7 +144,7 @@ doHTML()
     npm install html-minifier -g
     
     # verify HTML minifier installation
-    if [ "$(which html-minifier)" == "" ]; then
+    if ! command_exists html-minifier; then
         echo "html-minifier installation failed, not minifying HTML"
         export FAILED=true
     else
@@ -156,7 +161,7 @@ doCSSJS()
     npm install yuicompressor -g
     
     # verify yuicompressor installation
-    if [ "$(which yuicompressor)" == "" ]; then
+    if ! command_exists yuicompressor; then
         echo "yuicompressor installation failed, retrying with a jar file..."
         
         verifyCurl
