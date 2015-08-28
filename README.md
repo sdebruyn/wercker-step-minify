@@ -24,7 +24,7 @@ All parameters are optional. Don't put them in your *wercker.yml* to use the def
 
 ## Versioning
 
-Minor version bumps contain new features or bugfixes. Major version bumps contain breaking changes.
+The version number consists of three numbers. A bump in the in the major version (first number) indicates breaking changes. A bump in the second number indicates new features. The third number is increased for bugfixes.
 
 ### New Wercker (*ewok*) infrastructure example (with Docker)
 

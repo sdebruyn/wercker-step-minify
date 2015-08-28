@@ -97,7 +97,7 @@ minify_HTML()
     # minify all the HTML files
     echo "minifying HTML files with extension $WERCKER_MINIFY_HTML_EXT in $WERCKER_MINIFY_BASE_DIR with arguments $WERCKER_MINIFY_HTML_ARGS"
     
-    find ${WERCKER_MINIFY_BASE_DIR} -iname "*.${WERCKER_MINIFY_HTML_EXT}" -print0 | xargs -0 -t -P "${WERCKER_MINIFY_THREADS}" -n 1 -I filename html-minifier "${WERCKER_MINIFY_HTML_ARGS}" -o filename filename
+    find ${WERCKER_MINIFY_BASE_DIR} -iname "*.${WERCKER_MINIFY_HTML_EXT}" -print0 | xargs -0 -t -P "${WERCKER_MINIFY_THREADS}" -n 1 -I filename html-minifier ${WERCKER_MINIFY_HTML_ARGS} -o filename filename
 }
 
 minify_CSS()
@@ -105,7 +105,7 @@ minify_CSS()
     # minify all the CSS files
     echo "minifying CSS files with extension $WERCKER_MINIFY_CSS_EXT in $WERCKER_MINIFY_BASE_DIR with arguments $WERCKER_MINIFY_YUI_ARGS and command $YUI_COMMAND"
     
-    find ${WERCKER_MINIFY_BASE_DIR} -iname "*.${WERCKER_MINIFY_CSS_EXT}" -print0 | xargs -0 -t -n 1 -P "${WERCKER_MINIFY_THREADS}" -I filename "${YUI_COMMAND}" "${WERCKER_MINIFY_YUI_ARGS}" -o filename filename
+    find ${WERCKER_MINIFY_BASE_DIR} -iname "*.${WERCKER_MINIFY_CSS_EXT}" -print0 | xargs -0 -t -n 1 -P "${WERCKER_MINIFY_THREADS}" -I filename ${YUI_COMMAND} ${WERCKER_MINIFY_YUI_ARGS} -o filename filename
 }
 
 minify_JS()
@@ -113,7 +113,7 @@ minify_JS()
     # minify all the JS files
     echo "minifying JS files with extension $WERCKER_MINIFY_JS_EXT in $WERCKER_MINIFY_BASE_DIR with arguments $WERCKER_MINIFY_YUI_ARGS and command $YUI_COMMAND"
     
-    find ${WERCKER_MINIFY_BASE_DIR} -iname "*.${WERCKER_MINIFY_JS_EXT}" -print0 | xargs -0 -t -n 1 -P "${WERCKER_MINIFY_THREADS}" -I filename "${YUI_COMMAND}" "${WERCKER_MINIFY_YUI_ARGS}" -o filename filename
+    find ${WERCKER_MINIFY_BASE_DIR} -iname "*.${WERCKER_MINIFY_JS_EXT}" -print0 | xargs -0 -t -n 1 -P "${WERCKER_MINIFY_THREADS}" -I filename ${YUI_COMMAND} ${WERCKER_MINIFY_YUI_ARGS} -o filename filename
 }
 
 verify_java()
