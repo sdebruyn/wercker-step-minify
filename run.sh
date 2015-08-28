@@ -2,64 +2,71 @@
 set -e
 
 # http://stackoverflow.com/a/8574392/1592358
-contains_element () {
+contains_element ()
+{
   local e
   for e in "${@:2}"; do [[ "$e" == "$1" ]] && return 0; done
   return 1
 }
 
-# check if the branches match and abort the script if needed
-if [ -n "$WERCKER_MINIFY_IGNORE_BRANCHES" ]; then
-    arr=($WERCKER_MINIFY_IGNORE_BRANCHES)
-    if contains_element "$WERCKER_GIT_BRANCH" "${arr[@]}"; then
-        echo "We are not running on branch ${WERCKER_GIT_BRANCH}"
-        exit 0
+check_branches ()
+{
+    # check if the branches match and abort the script if needed
+    if [ -n "$WERCKER_MINIFY_IGNORE_BRANCHES" ]; then
+        arr=($WERCKER_MINIFY_IGNORE_BRANCHES)
+        if contains_element "$WERCKER_GIT_BRANCH" "${arr[@]}"; then
+            echo "We are not running on branch ${WERCKER_GIT_BRANCH}"
+            return 0
+        fi
+    elif [ -n "$WERCKER_MINIFY_ONLY_ON_BRANCHES" ]; then
+        arr=($WERCKER_MINIFY_ONLY_ON_BRANCHES)
+        if ! contains_element "$WERCKER_GIT_BRANCH" "${arr[@]}"; then
+            echo "We are not running on branch ${WERCKER_GIT_BRANCH}"
+            return 0
+        fi
     fi
-elif [ -n "$WERCKER_MINIFY_ONLY_ON_BRANCHES" ]; then
-    arr=($WERCKER_MINIFY_ONLY_ON_BRANCHES)
-    if ! contains_element "$WERCKER_GIT_BRANCH" "${arr[@]}"; then
-        echo "We are not running on branch ${WERCKER_GIT_BRANCH}"
-        exit 0
-    fi
-fi
-
+    return 1
+}
 
 FAILED=false
 APT_GET_UPDATED=false
 
-# set amount of threads if not set
-CORES=$(nproc)
-echo "$CORES cores detected"
-if [ ! -n "$WERCKER_MINIFY_THREADS" ]; then
-    WERCKER_MINIFY_THREADS=$CORES
-fi
-echo "running with $WERCKER_MINIFY_THREADS threads"
-
-# set base directory to public if not set
-DEFAULTDIR="public"
-if [ ! -n "$WERCKER_MINIFY_BASE_DIR" ]; then
-    WERCKER_MINIFY_BASE_DIR=$DEFAULTDIR
-fi
-
-# set minify defaults
-if [ ! -n "$WERCKER_MINIFY_HTML" ]; then
-    WERCKER_MINIFY_HTML=true
-fi
-if [ ! -n "$WERCKER_MINIFY_CSS" ]; then
-    WERCKER_MINIFY_CSS=true
-fi
-if [ ! -n "$WERCKER_MINIFY_JS" ]; then
-    WERCKER_MINIFY_JS=true
-fi
-if [ ! -n "$WERCKER_MINIFY_HTML_EXT" ]; then
-    WERCKER_MINIFY_HTML_EXT="html"
-fi
-if [ ! -n "$WERCKER_MINIFY_CSS_EXT" ]; then
-    WERCKER_MINIFY_CSS_EXT="css"
-fi
-if [ ! -n "$WERCKER_MINIFY_JS_EXT" ]; then
-    WERCKER_MINIFY_JS_EXT="js"
-fi
+set_variables()
+{
+    # set amount of threads if not set
+    CORES=$(nproc)
+    echo "$CORES cores detected"
+    if [ ! -n "$WERCKER_MINIFY_THREADS" ]; then
+        WERCKER_MINIFY_THREADS=$CORES
+    fi
+    echo "running with $WERCKER_MINIFY_THREADS threads"
+    
+    # set base directory to public if not set
+    DEFAULTDIR="public"
+    if [ ! -n "$WERCKER_MINIFY_BASE_DIR" ]; then
+        WERCKER_MINIFY_BASE_DIR=$DEFAULTDIR
+    fi
+    
+    # set minify defaults
+    if [ ! -n "$WERCKER_MINIFY_HTML" ]; then
+        WERCKER_MINIFY_HTML=true
+    fi
+    if [ ! -n "$WERCKER_MINIFY_CSS" ]; then
+        WERCKER_MINIFY_CSS=true
+    fi
+    if [ ! -n "$WERCKER_MINIFY_JS" ]; then
+        WERCKER_MINIFY_JS=true
+    fi
+    if [ ! -n "$WERCKER_MINIFY_HTML_EXT" ]; then
+        WERCKER_MINIFY_HTML_EXT="html"
+    fi
+    if [ ! -n "$WERCKER_MINIFY_CSS_EXT" ]; then
+        WERCKER_MINIFY_CSS_EXT="css"
+    fi
+    if [ ! -n "$WERCKER_MINIFY_JS_EXT" ]; then
+        WERCKER_MINIFY_JS_EXT="js"
+    fi
+}
 
 command_exists()
 {
@@ -211,12 +218,15 @@ do_CSS_JS()
     fi
 }
 
-if [ "$WERCKER_MINIFY_HTML" != "false" ]; then
-    do_HTML
-fi
-
-if [ "$WERCKER_MINIFY_CSS" != "false" ] || [ "$WERCKER_MINIFY_JS" != "false" ] ; then
-    do_CSS_JS
+if check_branches; then
+    set_variables
+    if [ "$WERCKER_MINIFY_HTML" != "false" ]; then
+        do_HTML
+    fi
+    
+    if [ "$WERCKER_MINIFY_CSS" != "false" ] || [ "$WERCKER_MINIFY_JS" != "false" ] ; then
+        do_CSS_JS
+    fi
 fi
 
 if [ "$FAILED" = true ] ; then
