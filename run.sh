@@ -61,16 +61,6 @@ if [ ! -n "$WERCKER_MINIFY_JS_EXT" ]; then
     WERCKER_MINIFY_JS_EXT="js"
 fi
 
-# set arguments if not set
-DEFAULT_ARGS="--use-short-doctype --remove-style-link-type-attributes --remove-script-type-attributes --remove-comments --minify-css --minify-js --collapse-whitespace --remove-comments-from-cdata --conservative-collapse --remove-cdatasections-from-cdata"
-if [ ! -n "$WERCKER_MINIFY_HTML_ARGS" ]; then
-    WERCKER_MINIFY_HTML_ARGS="$DEFAULT_ARGS"
-fi
-
-if [ ! -n "$WERCKER_MINIFY_YUI_ARGS" ]; then
-    WERCKER_MINIFY_YUI_ARGS=""
-fi
-
 command_exists()
 {
     echo "checking if $1 is installed..."
