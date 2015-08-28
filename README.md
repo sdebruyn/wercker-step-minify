@@ -19,6 +19,8 @@ All parameters are optional. Don't put them in your *wercker.yml* to use the def
 * `htmlext`: The extension of the HTML files to be minified. Default is `html`.
 * `cssext`: The extension of the CSS files to be minified. Default is `css`.
 * `jsext`: The extension of the JS files to be minified. Default is `js`.
+* `ignorebranches`: A space separated list of branches on which this step should not run. *This step runs on all branches by default.*
+* `onlyonbranches`: A space separated list of branches on which this step should run. The step will not run on any other branch. This is ignored if `ignorebranches` is set. *This step runs on all branches by default.*
 
 ### New Wercker (*ewok*) infrastructure example (with Docker)
 

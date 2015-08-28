@@ -1,51 +1,74 @@
 #/bin/bash
 set -e
 
-export FAILED=false
-export APT_GET_UPDATED=false
+# http://stackoverflow.com/a/8574392/1592358
+containsElement () {
+  local e
+  for e in "${@:2}"; do [[ "$e" == "$1" ]] && return 0; done
+  return 1
+}
+
+# check if the branches match and abort the script if needed
+if [ -n "$WERCKER_MINIFY_IGNOREBRANCHES" ]; then
+    arr=($WERCKER_MINIFY_IGNOREBRANCHES)
+    if containsElement "$WERCKER_GIT_BRANCH" "${arr[@]}"; then
+        echo "We are not running on branch ${WERCKER_GIT_BRANCH}"
+        exit 0
+    fi
+elif [ -n "$WERCKER_MINIFY_ONLYONBRANCHES" ]; then
+    arr=($WERCKER_MINIFY_ONLYONBRANCHES)
+    if ! containsElement "$WERCKER_GIT_BRANCH" "${arr[@]}"; then
+        echo "We are not running on branch ${WERCKER_GIT_BRANCH}"
+        exit 0
+    fi
+fi
+
+
+FAILED=false
+APT_GET_UPDATED=false
 
 # set amount of threads if not set
-CORES=`nproc`
+CORES=$(nproc)
 echo "$CORES cores detected"
 if [ ! -n "$WERCKER_MINIFY_THREADS" ]; then
-    export WERCKER_MINIFY_THREADS=$CORES
+    WERCKER_MINIFY_THREADS=$CORES
 fi
 echo "running with $WERCKER_MINIFY_THREADS threads"
 
 # set base directory to public if not set
 DEFAULTDIR="public"
 if [ ! -n "$WERCKER_MINIFY_BASEDIR" ]; then
-    export WERCKER_MINIFY_BASEDIR=$DEFAULTDIR
+    WERCKER_MINIFY_BASEDIR=$DEFAULTDIR
 fi
 
 # set minify defaults
 if [ ! -n "$WERCKER_MINIFY_HTML" ]; then
-    export WERCKER_MINIFY_HTML=true
+    WERCKER_MINIFY_HTML=true
 fi
 if [ ! -n "$WERCKER_MINIFY_CSS" ]; then
-    export WERCKER_MINIFY_CSS=true
+    WERCKER_MINIFY_CSS=true
 fi
 if [ ! -n "$WERCKER_MINIFY_JS" ]; then
-    export WERCKER_MINIFY_JS=true
+    WERCKER_MINIFY_JS=true
 fi
 if [ ! -n "$WERCKER_MINIFY_HTMLEXT" ]; then
-    export WERCKER_MINIFY_HTMLEXT="html"
+    WERCKER_MINIFY_HTMLEXT="html"
 fi
 if [ ! -n "$WERCKER_MINIFY_CSSEXT" ]; then
-    export WERCKER_MINIFY_CSSEXT="css"
+    WERCKER_MINIFY_CSSEXT="css"
 fi
 if [ ! -n "$WERCKER_MINIFY_JSEXT" ]; then
-    export WERCKER_MINIFY_JSEXT="js"
+    WERCKER_MINIFY_JSEXT="js"
 fi
 
 # set arguments if not set
 DEFAULTARGS="--use-short-doctype --remove-style-link-type-attributes --remove-script-type-attributes --remove-comments --minify-css --minify-js --collapse-whitespace --remove-comments-from-cdata --conservative-collapse --remove-cdatasections-from-cdata"
 if [ ! -n "$WERCKER_MINIFY_HTMLARGS" ]; then
-    export WERCKER_MINIFY_HTMLARGS="$DEFAULTARGS"
+    WERCKER_MINIFY_HTMLARGS="$DEFAULTARGS"
 fi
 
 if [ ! -n "$WERCKER_MINIFY_YUIARGS" ]; then
-    export WERCKER_MINIFY_YUIARGS=""
+    WERCKER_MINIFY_YUIARGS=""
 fi
 
 command_exists()
@@ -57,16 +80,16 @@ command_exists()
 verifyYUI()
 {
     if command_exists yuicompressor; then
-        export YUI_COMMAND="yuicompressor"
+        YUI_COMMAND="yuicompressor"
     elif command_exists yui-compressor; then
-        export YUI_COMMAND="yui-compressor"
+        YUI_COMMAND="yui-compressor"
     else
         echo "installing yuicompressor with java..."
         verifyJava
         verifyCurl
         echo "downloading yuicompressor with curl..."
         curl -L https://github.com/yui/yuicompressor/releases/download/v2.4.8/yuicompressor-2.4.8.jar -o yui.jar
-        export YUI_COMMAND="java -jar yui.jar"
+        YUI_COMMAND="java -jar yui.jar"
     fi
 }
 
@@ -75,7 +98,7 @@ minifyHTML()
     # minify all the HTML files
     echo "minifying HTML files with extension $WERCKER_MINIFY_HTMLEXT in $WERCKER_MINIFY_BASEDIR with arguments $WERCKER_MINIFY_HTMLARGS"
     
-    find ${WERCKER_MINIFY_BASEDIR} -iname *.${WERCKER_MINIFY_HTMLEXT} -print0 | xargs -0 -t -P ${WERCKER_MINIFY_THREADS} -n 1 -I filename html-minifier ${WERCKER_MINIFY_HTMLARGS} -o filename filename
+    find ${WERCKER_MINIFY_BASEDIR} -iname "*.${WERCKER_MINIFY_HTMLEXT}" -print0 | xargs -0 -t -P "${WERCKER_MINIFY_THREADS}" -n 1 -I filename html-minifier "${WERCKER_MINIFY_HTMLARGS}" -o filename filename
 }
 
 minifyCSS()
@@ -83,7 +106,7 @@ minifyCSS()
     # minify all the CSS files
     echo "minifying CSS files with extension $WERCKER_MINIFY_CSSEXT in $WERCKER_MINIFY_BASEDIR with arguments $WERCKER_MINIFY_YUIARGS and command $YUI_COMMAND"
     
-    find ${WERCKER_MINIFY_BASEDIR} -iname *.${WERCKER_MINIFY_CSSEXT} -print0 | xargs -0 -t -n 1 -P ${WERCKER_MINIFY_THREADS} -I filename ${YUI_COMMAND} ${WERCKER_MINIFY_YUIARGS} -o filename filename
+    find ${WERCKER_MINIFY_BASEDIR} -iname "*.${WERCKER_MINIFY_CSSEXT}" -print0 | xargs -0 -t -n 1 -P "${WERCKER_MINIFY_THREADS}" -I filename "${YUI_COMMAND}" "${WERCKER_MINIFY_YUIARGS}" -o filename filename
 }
 
 minifyJS()
@@ -91,7 +114,7 @@ minifyJS()
     # minify all the JS files
     echo "minifying JS files with extension $WERCKER_MINIFY_JSEXT in $WERCKER_MINIFY_BASEDIR with arguments $WERCKER_MINIFY_YUIARGS and command $YUI_COMMAND"
     
-    find ${WERCKER_MINIFY_BASEDIR} -iname *.${WERCKER_MINIFY_JSEXT} -print0 | xargs -0 -t -n 1 -P ${WERCKER_MINIFY_THREADS} -I filename ${YUI_COMMAND} ${WERCKER_MINIFY_YUIARGS} -o filename filename
+    find ${WERCKER_MINIFY_BASEDIR} -iname "*.${WERCKER_MINIFY_JSEXT}" -print0 | xargs -0 -t -n 1 -P "${WERCKER_MINIFY_THREADS}" -I filename "${YUI_COMMAND}" "${WERCKER_MINIFY_YUIARGS}" -o filename filename
 }
 
 verifyJava()
@@ -103,7 +126,7 @@ verifyJava()
             
             if [ "$APT_GET_UPDATED" = false ] ; then
                 apt-get update
-                export APT_GET_UPDATED=true
+                APT_GET_UPDATED=true
             fi            
                 
             apt-get install -y openjdk-7-jre
@@ -122,7 +145,7 @@ verifyCurl()
             
             if [ "$APT_GET_UPDATED" = false ] ; then
                 apt-get update
-                export APT_GET_UPDATED=true
+                APT_GET_UPDATED=true
             fi            
             
             apt-get install -y curl
@@ -143,7 +166,7 @@ verifyNode()
         echo "node not installed, installing..."
         if command_exists apt-get; then
     		curl -sL https://deb.nodesource.com/setup_0.12 | bash -
-            export APT_GET_UPDATED=true
+            APT_GET_UPDATED=true
             apt-get install -y nodejs build-essential
         else
             curl -sL https://rpm.nodesource.com/setup | bash -
@@ -164,7 +187,7 @@ doHTML()
     # verify HTML minifier installation
     if ! command_exists html-minifier; then
         echo "html-minifier installation failed, not minifying HTML"
-        export FAILED=true
+        FAILED=true
     else
         minifyHTML
     fi
@@ -178,7 +201,7 @@ doCSSJS()
         if command_exists apt-get; then
             if [ "$APT_GET_UPDATED" = false ] ; then
                 apt-get update
-                export APT_GET_UPDATED=true
+                APT_GET_UPDATED=true
             fi
             apt-get -y install yui-compressor 2>/dev/null
         fi
