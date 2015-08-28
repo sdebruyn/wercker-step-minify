@@ -9,6 +9,7 @@ contains_element ()
   return 1
 }
 
+# is true if the script should run
 check_branches ()
 {
     # check if the branches match and abort the script if needed
@@ -16,16 +17,17 @@ check_branches ()
         arr=($WERCKER_MINIFY_IGNORE_BRANCHES)
         if contains_element "$WERCKER_GIT_BRANCH" "${arr[@]}"; then
             echo "We are not running on branch ${WERCKER_GIT_BRANCH}"
-            return 0
+            return 1
         fi
     elif [ -n "$WERCKER_MINIFY_ONLY_ON_BRANCHES" ]; then
         arr=($WERCKER_MINIFY_ONLY_ON_BRANCHES)
         if ! contains_element "$WERCKER_GIT_BRANCH" "${arr[@]}"; then
             echo "We are not running on branch ${WERCKER_GIT_BRANCH}"
-            return 0
+            return 1
         fi
+    else
+        return 0
     fi
-    return 1
 }
 
 FAILED=false
@@ -220,6 +222,7 @@ do_CSS_JS()
 
 if check_branches; then
     set_variables
+    
     if [ "$WERCKER_MINIFY_HTML" != "false" ]; then
         do_HTML
     fi
