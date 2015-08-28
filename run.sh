@@ -16,13 +16,13 @@ check_branches ()
     if [ -n "$WERCKER_MINIFY_IGNORE_BRANCHES" ]; then
         arr=($WERCKER_MINIFY_IGNORE_BRANCHES)
         if contains_element "$WERCKER_GIT_BRANCH" "${arr[@]}"; then
-            echo "We are not running on branch ${WERCKER_GIT_BRANCH}"
+            echo "not running on branch ${WERCKER_GIT_BRANCH}"
             return 1
         fi
     elif [ -n "$WERCKER_MINIFY_ONLY_ON_BRANCHES" ]; then
         arr=($WERCKER_MINIFY_ONLY_ON_BRANCHES)
         if ! contains_element "$WERCKER_GIT_BRANCH" "${arr[@]}"; then
-            echo "We are not running on branch ${WERCKER_GIT_BRANCH}"
+            echo "not running on branch ${WERCKER_GIT_BRANCH}"
             return 1
         fi
     else
