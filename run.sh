@@ -2,22 +2,22 @@
 set -e
 
 # http://stackoverflow.com/a/8574392/1592358
-containsElement () {
+contains_element () {
   local e
   for e in "${@:2}"; do [[ "$e" == "$1" ]] && return 0; done
   return 1
 }
 
 # check if the branches match and abort the script if needed
-if [ -n "$WERCKER_MINIFY_IGNOREBRANCHES" ]; then
-    arr=($WERCKER_MINIFY_IGNOREBRANCHES)
-    if containsElement "$WERCKER_GIT_BRANCH" "${arr[@]}"; then
+if [ -n "$WERCKER_MINIFY_IGNORE_BRANCHES" ]; then
+    arr=($WERCKER_MINIFY_IGNORE_BRANCHES)
+    if contains_element "$WERCKER_GIT_BRANCH" "${arr[@]}"; then
         echo "We are not running on branch ${WERCKER_GIT_BRANCH}"
         exit 0
     fi
-elif [ -n "$WERCKER_MINIFY_ONLYONBRANCHES" ]; then
-    arr=($WERCKER_MINIFY_ONLYONBRANCHES)
-    if ! containsElement "$WERCKER_GIT_BRANCH" "${arr[@]}"; then
+elif [ -n "$WERCKER_MINIFY_ONLY_ON_BRANCHES" ]; then
+    arr=($WERCKER_MINIFY_ONLY_ON_BRANCHES)
+    if ! contains_element "$WERCKER_GIT_BRANCH" "${arr[@]}"; then
         echo "We are not running on branch ${WERCKER_GIT_BRANCH}"
         exit 0
     fi
@@ -37,8 +37,8 @@ echo "running with $WERCKER_MINIFY_THREADS threads"
 
 # set base directory to public if not set
 DEFAULTDIR="public"
-if [ ! -n "$WERCKER_MINIFY_BASEDIR" ]; then
-    WERCKER_MINIFY_BASEDIR=$DEFAULTDIR
+if [ ! -n "$WERCKER_MINIFY_BASE_DIR" ]; then
+    WERCKER_MINIFY_BASE_DIR=$DEFAULTDIR
 fi
 
 # set minify defaults
@@ -51,24 +51,24 @@ fi
 if [ ! -n "$WERCKER_MINIFY_JS" ]; then
     WERCKER_MINIFY_JS=true
 fi
-if [ ! -n "$WERCKER_MINIFY_HTMLEXT" ]; then
-    WERCKER_MINIFY_HTMLEXT="html"
+if [ ! -n "$WERCKER_MINIFY_HTML_EXT" ]; then
+    WERCKER_MINIFY_HTML_EXT="html"
 fi
-if [ ! -n "$WERCKER_MINIFY_CSSEXT" ]; then
-    WERCKER_MINIFY_CSSEXT="css"
+if [ ! -n "$WERCKER_MINIFY_CSS_EXT" ]; then
+    WERCKER_MINIFY_CSS_EXT="css"
 fi
-if [ ! -n "$WERCKER_MINIFY_JSEXT" ]; then
-    WERCKER_MINIFY_JSEXT="js"
+if [ ! -n "$WERCKER_MINIFY_JS_EXT" ]; then
+    WERCKER_MINIFY_JS_EXT="js"
 fi
 
 # set arguments if not set
-DEFAULTARGS="--use-short-doctype --remove-style-link-type-attributes --remove-script-type-attributes --remove-comments --minify-css --minify-js --collapse-whitespace --remove-comments-from-cdata --conservative-collapse --remove-cdatasections-from-cdata"
-if [ ! -n "$WERCKER_MINIFY_HTMLARGS" ]; then
-    WERCKER_MINIFY_HTMLARGS="$DEFAULTARGS"
+DEFAULT_ARGS="--use-short-doctype --remove-style-link-type-attributes --remove-script-type-attributes --remove-comments --minify-css --minify-js --collapse-whitespace --remove-comments-from-cdata --conservative-collapse --remove-cdatasections-from-cdata"
+if [ ! -n "$WERCKER_MINIFY_HTML_ARGS" ]; then
+    WERCKER_MINIFY_HTML_ARGS="$DEFAULT_ARGS"
 fi
 
-if [ ! -n "$WERCKER_MINIFY_YUIARGS" ]; then
-    WERCKER_MINIFY_YUIARGS=""
+if [ ! -n "$WERCKER_MINIFY_YUI_ARGS" ]; then
+    WERCKER_MINIFY_YUI_ARGS=""
 fi
 
 command_exists()
@@ -77,7 +77,7 @@ command_exists()
     hash "$1" 2>/dev/null
 }
 
-verifyYUI()
+verify_YUI()
 {
     if command_exists yuicompressor; then
         YUI_COMMAND="yuicompressor"
@@ -85,39 +85,39 @@ verifyYUI()
         YUI_COMMAND="yui-compressor"
     else
         echo "installing yuicompressor with java..."
-        verifyJava
-        verifyCurl
+        verify_java
+        verify_curl
         echo "downloading yuicompressor with curl..."
         curl -L https://github.com/yui/yuicompressor/releases/download/v2.4.8/yuicompressor-2.4.8.jar -o yui.jar
         YUI_COMMAND="java -jar yui.jar"
     fi
 }
 
-minifyHTML()
+minify_HTML()
 {
     # minify all the HTML files
-    echo "minifying HTML files with extension $WERCKER_MINIFY_HTMLEXT in $WERCKER_MINIFY_BASEDIR with arguments $WERCKER_MINIFY_HTMLARGS"
+    echo "minifying HTML files with extension $WERCKER_MINIFY_HTML_EXT in $WERCKER_MINIFY_BASE_DIR with arguments $WERCKER_MINIFY_HTML_ARGS"
     
-    find ${WERCKER_MINIFY_BASEDIR} -iname "*.${WERCKER_MINIFY_HTMLEXT}" -print0 | xargs -0 -t -P "${WERCKER_MINIFY_THREADS}" -n 1 -I filename html-minifier "${WERCKER_MINIFY_HTMLARGS}" -o filename filename
+    find ${WERCKER_MINIFY_BASE_DIR} -iname "*.${WERCKER_MINIFY_HTML_EXT}" -print0 | xargs -0 -t -P "${WERCKER_MINIFY_THREADS}" -n 1 -I filename html-minifier "${WERCKER_MINIFY_HTML_ARGS}" -o filename filename
 }
 
-minifyCSS()
+minify_CSS()
 {
     # minify all the CSS files
-    echo "minifying CSS files with extension $WERCKER_MINIFY_CSSEXT in $WERCKER_MINIFY_BASEDIR with arguments $WERCKER_MINIFY_YUIARGS and command $YUI_COMMAND"
+    echo "minifying CSS files with extension $WERCKER_MINIFY_CSS_EXT in $WERCKER_MINIFY_BASE_DIR with arguments $WERCKER_MINIFY_YUI_ARGS and command $YUI_COMMAND"
     
-    find ${WERCKER_MINIFY_BASEDIR} -iname "*.${WERCKER_MINIFY_CSSEXT}" -print0 | xargs -0 -t -n 1 -P "${WERCKER_MINIFY_THREADS}" -I filename "${YUI_COMMAND}" "${WERCKER_MINIFY_YUIARGS}" -o filename filename
+    find ${WERCKER_MINIFY_BASE_DIR} -iname "*.${WERCKER_MINIFY_CSS_EXT}" -print0 | xargs -0 -t -n 1 -P "${WERCKER_MINIFY_THREADS}" -I filename "${YUI_COMMAND}" "${WERCKER_MINIFY_YUI_ARGS}" -o filename filename
 }
 
-minifyJS()
+minify_JS()
 {
     # minify all the JS files
-    echo "minifying JS files with extension $WERCKER_MINIFY_JSEXT in $WERCKER_MINIFY_BASEDIR with arguments $WERCKER_MINIFY_YUIARGS and command $YUI_COMMAND"
+    echo "minifying JS files with extension $WERCKER_MINIFY_JS_EXT in $WERCKER_MINIFY_BASE_DIR with arguments $WERCKER_MINIFY_YUI_ARGS and command $YUI_COMMAND"
     
-    find ${WERCKER_MINIFY_BASEDIR} -iname "*.${WERCKER_MINIFY_JSEXT}" -print0 | xargs -0 -t -n 1 -P "${WERCKER_MINIFY_THREADS}" -I filename "${YUI_COMMAND}" "${WERCKER_MINIFY_YUIARGS}" -o filename filename
+    find ${WERCKER_MINIFY_BASE_DIR} -iname "*.${WERCKER_MINIFY_JS_EXT}" -print0 | xargs -0 -t -n 1 -P "${WERCKER_MINIFY_THREADS}" -I filename "${YUI_COMMAND}" "${WERCKER_MINIFY_YUI_ARGS}" -o filename filename
 }
 
-verifyJava()
+verify_java()
 {
     # check if java is installed
     if ! command_exists java; then
@@ -136,7 +136,7 @@ verifyJava()
     fi
 }
 
-verifyCurl()
+verify_curl()
 {
     # check if curl is installed
     if ! command_exists curl; then
@@ -155,12 +155,12 @@ verifyCurl()
     fi
 }
 
-verifyNode()
+verify_node()
 {
     # check if node is installed
     if ! command_exists node; then
     
-        verifyCurl
+        verify_curl
     
         # install node
         echo "node not installed, installing..."
@@ -175,12 +175,12 @@ verifyNode()
     fi
 }
 
-doHTML()
+do_HTML()
 {
     if ! command_exists html-minifier; then
         # install the HTML minifier
         echo "installing html-minifier with npm"
-        verifyNode
+        verify_node
         npm install html-minifier -g
     fi
     
@@ -189,11 +189,11 @@ doHTML()
         echo "html-minifier installation failed, not minifying HTML"
         FAILED=true
     else
-        minifyHTML
+        minify_HTML
     fi
 }
 
-doCSSJS()
+do_CSS_JS()
 {
     echo "installing yuicompressor..."
     
@@ -211,22 +211,22 @@ doCSSJS()
         fi
     fi
     
-    verifyYUI
+    verify_YUI
     
     if [ "$WERCKER_MINIFY_CSS" != "false" ]; then
-        minifyCSS
+        minify_CSS
     fi
     if [ "$WERCKER_MINIFY_JS" != "false" ]; then
-        minifyJS
+        minify_JS
     fi
 }
 
 if [ "$WERCKER_MINIFY_HTML" != "false" ]; then
-    doHTML
+    do_HTML
 fi
 
 if [ "$WERCKER_MINIFY_CSS" != "false" ] || [ "$WERCKER_MINIFY_JS" != "false" ] ; then
-    doCSSJS
+    do_CSS_JS
 fi
 
 if [ "$FAILED" = true ] ; then
