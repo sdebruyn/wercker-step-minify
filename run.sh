@@ -31,7 +31,20 @@ check_branches ()
 }
 
 FAILED=false
-APT_GET_UPDATED=false
+
+SOURCES_UPDATED=false
+update_sources()
+{
+    if [ "$SOURCES_UPDATED" = false ] ; then
+        if command_exists apt-get; then
+            apt-get update
+        fi
+        if command_exists pacman; then
+            pacman -Syu
+        fi
+        SOURCES_UPDATED=true
+    fi 
+}
 
 set_variables()
 {
@@ -121,14 +134,11 @@ verify_java()
     # check if java is installed
     if ! command_exists java; then
         echo "java not installed, installing..."
-        if command_exists apt-get; then
-            
-            if [ "$APT_GET_UPDATED" = false ] ; then
-                apt-get update
-                APT_GET_UPDATED=true
-            fi            
-                
+        update_sources
+        if command_exists apt-get; then      
             apt-get install -y openjdk-7-jre
+        elif command_exists pacman; then
+            pacman -S --noconfirm jre7-openjdk-headless
         else
             yum install -y java-1.7.0-openjdk
         fi
@@ -140,14 +150,11 @@ verify_curl()
     # check if curl is installed
     if ! command_exists curl; then
         echo "curl not installed, installing..."
-        if command_exists apt-get; then
-            
-            if [ "$APT_GET_UPDATED" = false ] ; then
-                apt-get update
-                APT_GET_UPDATED=true
-            fi            
-            
+        update_sources
+        if command_exists apt-get; then       
             apt-get install -y curl
+        elif command_exists pacman; then
+            pacman -S --noconfirm curl
         else
             yum install -y curl
         fi
@@ -165,8 +172,9 @@ verify_node()
         echo "node not installed, installing..."
         if command_exists apt-get; then
     		curl -sL https://deb.nodesource.com/setup_0.12 | bash -
-            APT_GET_UPDATED=true
             apt-get install -y nodejs build-essential
+        elif command_exists pacman; then
+            pacman -S --noconfirm nodejs npm
         else
             curl -sL https://rpm.nodesource.com/setup | bash -
             yum install -y nodejs gcc-c++ make
@@ -197,11 +205,8 @@ do_CSS_JS()
     echo "installing yuicompressor..."
     
     if (! command_exists yuicompressor) && (! command_exists yui-compressor); then
+        update_sources
         if command_exists apt-get; then
-            if [ "$APT_GET_UPDATED" = false ] ; then
-                apt-get update
-                APT_GET_UPDATED=true
-            fi
             apt-get -y install yui-compressor 2>/dev/null
         fi
         if (! command_exists yuicompressor) && (! command_exists yui-compressor); then
