@@ -1,11 +1,12 @@
 name: minify
-version: 2.1.0
+version: 2.2.0
 description: |
-    This step minifies static resources like HTML, CSS and JS files.
+    This step minifies static resources like HTML, CSS, JS and PNG files.
 keywords:
   - minify
   - min
   - uglify
+  - png
   - compress
   - static
   - hugo
@@ -23,6 +24,10 @@ properties:
         type: string
         default: "--use-short-doctype --remove-style-link-type-attributes --remove-script-type-attributes --remove-comments --minify-css --minify-js --collapse-whitespace --remove-comments-from-cdata --conservative-collapse --remove-cdatasections-from-cdata"
         required: false
+    png_args:
+        type: string
+        default: -o7 -f4 -strip all
+        required: false
     yui_args:
         type: string
         default: ""
@@ -36,6 +41,10 @@ properties:
         default: "true"
         required: false
     js:
+        type: string
+        default: "true"
+        required: false
+    png:
         type: string
         default: "true"
         required: false

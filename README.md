@@ -12,8 +12,10 @@ All parameters are optional. Don't put them in your *wercker.yml* to use the def
 * `base_dir`: The directory containing the website to be minified. *Default is `public`.*
 * `threads`: The number of simultaneous operations. Put this between quotes (e.g. *"4"*). *Default is the number of cores of the host.*
 * `html_args`: The arguments for [html-minifier](https://github.com/kangax/html-minifier). *Default is `--use-short-doctype --remove-style-link-type-attributes --remove-script-type-attributes --remove-comments --minify-css --minify-js --collapse-whitespace --remove-comments-from-cdata --conservative-collapse --remove-cdatasections-from-cdata`.*
+* `png_args`: The arguments for [optipng](http://optipng.sourceforge.net/). *Default is `-o7 -f4 -strip all`.*
 * `yui_args`: The arguments for [yuicompressor](https://github.com/yui/yuicompressor). *No arguments by default.*
 * `html`: Set this to `false` to disable HTML minification. *Default is `true`.*
+* `png`: Set this to `false` to disable PNG compression. *Default is `true`.*
 * `css`: Set this to `false` to disable CSS minification (CSS in HTML files will still be minified if you don't change `html` or `html_args`). *Default is `true`*
 * `js`: Set this to `false` to disable JS minification (JS in HTML files will still be minified if you don't change `html` or `html_args`). *Default is `true`*
 * `html_ext`: The extension of the HTML files to be minified. Default is `html`.
@@ -47,8 +49,9 @@ The version number consists of three numbers. A bump in the in the major version
 ## How it works
 
 This script uses [html-minifier](https://github.com/kangax/html-minifier) to minify HTML files and [yuicompressor](https://github.com/yui/yuicompressor) to minify CSS and JS files. This also means that the script installs node, curl and java if they aren't already installed.
+[OptiPNG](http://optipng.sourceforge.net/) is used for PNG compression.
 
-The script should work on any OS using *apt-get* or *yum* as package managers.
+The script should work on any OS using *apt-get*, *pacman* or *yum* as package managers.
 
 ## Contributing and license
 

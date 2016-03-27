@@ -72,6 +72,9 @@ set_variables()
     if [ ! -n "$WERCKER_MINIFY_JS" ]; then
         WERCKER_MINIFY_JS=true
     fi
+    if [ ! -n "$WERCKER_MINIFY_PNG" ]; then
+        WERCKER_MINIFY_PNG=true
+    fi
     if [ ! -n "$WERCKER_MINIFY_HTML_EXT" ]; then
         WERCKER_MINIFY_HTML_EXT="html"
     fi
@@ -129,6 +132,13 @@ minify_JS()
     find ${WERCKER_MINIFY_BASE_DIR} -iname "*.${WERCKER_MINIFY_JS_EXT}" -print0 | xargs -0 -t -n 1 -P "${WERCKER_MINIFY_THREADS}" -I filename ${YUI_COMMAND} ${WERCKER_MINIFY_YUI_ARGS} -o filename filename
 }
 
+compress_PNG()
+{
+    # minify all the PNG files
+    echo "minifying PNG files in $WERCKER_MINIFY_BASE_DIR with arguments $WERCKER_MINIFY_PNG_ARGS"
+    
+    find ${WERCKER_MINIFY_BASE_DIR} -iname "*.png" -print0 | xargs -0 -t -n 1 -P "${WERCKER_MINIFY_THREADS}" optipng ${WERCKER_MINIFY_PNG_ARGS}
+
 verify_java()
 {
     # check if java is installed
@@ -179,6 +189,31 @@ verify_node()
             curl -sL https://rpm.nodesource.com/setup | bash -
             yum install -y nodejs gcc-c++ make
         fi
+    fi
+}
+
+do_PNG()
+{
+    if ! command_exists optipng; then
+        # install optipng
+        echo "installing optipng"
+        update_sources
+        if command_exists apt-get; then
+            apt-get -y install optipng
+        elif command_exists pacman; then
+            pacman -S --noconfirm optipng
+        else
+            yum install -y optipng
+        fi
+        
+    fi
+    
+    # verify optipng installation
+    if ! command_exists html-minifier; then
+        echo "optipng installation failed, not compressing PNG"
+        FAILED=true
+    else
+        compress_PNG
     fi
 }
 
@@ -234,6 +269,10 @@ if check_branches; then
     
     if [ "$WERCKER_MINIFY_CSS" != "false" ] || [ "$WERCKER_MINIFY_JS" != "false" ] ; then
         do_CSS_JS
+    fi
+    
+    if [ "$WERCKER_MINIFY_PNG" != "false" ]; then
+        do_PNG
     fi
 fi
 
