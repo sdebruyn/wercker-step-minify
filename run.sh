@@ -138,6 +138,7 @@ compress_PNG()
     echo "minifying PNG files in $WERCKER_MINIFY_BASE_DIR with arguments $WERCKER_MINIFY_PNG_ARGS"
     
     find ${WERCKER_MINIFY_BASE_DIR} -iname "*.png" -print0 | xargs -0 -t -n 1 -P "${WERCKER_MINIFY_THREADS}" optipng ${WERCKER_MINIFY_PNG_ARGS}
+}
 
 verify_java()
 {
