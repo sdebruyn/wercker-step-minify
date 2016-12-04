@@ -11,7 +11,7 @@ All parameters are optional. Don't put them in your *wercker.yml* to use the def
 
 * `base_dir`: The directory containing the website to be minified. *Default is `public`.*
 * `threads`: The number of simultaneous operations. Put this between quotes (e.g. *"4"*). *Default is the number of cores of the host.*
-* `html_args`: The arguments for [html-minifier](https://github.com/kangax/html-minifier). *Default is `--use-short-doctype --remove-style-link-type-attributes --remove-script-type-attributes --remove-comments --minify-css --minify-js --collapse-whitespace --remove-comments-from-cdata --conservative-collapse --remove-cdatasections-from-cdata`.*
+* `html_args`: The arguments for [html-minifier](https://github.com/kangax/html-minifier). *Default is `--use-short-doctype --remove-style-link-type-attributes --remove-script-type-attributes --remove-comments --minify-css --minify-js --collapse-whitespace --conservative-collapse`.*
 * `png_args`: The arguments for [optipng](http://optipng.sourceforge.net/). *Default is `-o7 -f4 -strip all`.*
 * `yui_args`: The arguments for [yuicompressor](https://github.com/yui/yuicompressor). *No arguments by default.*
 * `html`: Set this to `false` to disable HTML minification. *Default is `true`.*
