@@ -182,7 +182,7 @@ verify_node()
         # install node
         echo "node not installed, installing..."
         if command_exists apt-get; then
-    		curl -sL https://deb.nodesource.com/setup_0.12 | bash -
+            curl -sL https://deb.nodesource.com/setup_6.x | bash -
             apt-get install -y nodejs build-essential
         elif command_exists pacman; then
             pacman -S --noconfirm nodejs npm
