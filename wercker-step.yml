@@ -22,7 +22,7 @@ properties:
         required: false
     html_args:
         type: string
-        default: "--use-short-doctype --remove-style-link-type-attributes --remove-script-type-attributes --remove-comments --minify-css --minify-js --collapse-whitespace --remove-comments-from-cdata --conservative-collapse --remove-cdatasections-from-cdata"
+        default: "--use-short-doctype --remove-style-link-type-attributes --remove-script-type-attributes --remove-comments --minify-css --minify-js --collapse-whitespace  --conservative-collapse"
         required: false
     png_args:
         type: string

@@ -43,7 +43,7 @@ update_sources()
             pacman -Syu
         fi
         SOURCES_UPDATED=true
-    fi 
+    fi
 }
 
 set_variables()
@@ -55,13 +55,13 @@ set_variables()
         WERCKER_MINIFY_THREADS=$CORES
     fi
     echo "running with $WERCKER_MINIFY_THREADS threads"
-    
+
     # set base directory to public if not set
     DEFAULTDIR="public"
     if [ ! -n "$WERCKER_MINIFY_BASE_DIR" ]; then
         WERCKER_MINIFY_BASE_DIR=$DEFAULTDIR
     fi
-    
+
     # set minify defaults
     if [ ! -n "$WERCKER_MINIFY_HTML" ]; then
         WERCKER_MINIFY_HTML=true
@@ -112,15 +112,15 @@ minify_HTML()
 {
     # minify all the HTML files
     echo "minifying HTML files with extension $WERCKER_MINIFY_HTML_EXT in $WERCKER_MINIFY_BASE_DIR with arguments $WERCKER_MINIFY_HTML_ARGS"
-    
-    find ${WERCKER_MINIFY_BASE_DIR} -iname "*.${WERCKER_MINIFY_HTML_EXT}" -print0 | xargs -0 -t -P "${WERCKER_MINIFY_THREADS}" -n 1 -I filename html-minifier ${WERCKER_MINIFY_HTML_ARGS} -o filename filename
+
+    find ${WERCKER_MINIFY_BASE_DIR} -iname "*.${WERCKER_MINIFY_HTML_EXT}" -print0 | xargs -0 -t -P "${WERCKER_MINIFY_THREADS}" -n 1 -I filename sh -c '(rm "filename" && html-minifier ${WERCKER_MINIFY_HTML_ARGS} > "filename") < "filename"'
 }
 
 minify_CSS()
 {
     # minify all the CSS files
     echo "minifying CSS files with extension $WERCKER_MINIFY_CSS_EXT in $WERCKER_MINIFY_BASE_DIR with arguments $WERCKER_MINIFY_YUI_ARGS and command $YUI_COMMAND"
-    
+
     find ${WERCKER_MINIFY_BASE_DIR} -iname "*.${WERCKER_MINIFY_CSS_EXT}" -print0 | xargs -0 -t -n 1 -P "${WERCKER_MINIFY_THREADS}" -I filename ${YUI_COMMAND} ${WERCKER_MINIFY_YUI_ARGS} -o filename filename
 }
 
@@ -128,7 +128,7 @@ minify_JS()
 {
     # minify all the JS files
     echo "minifying JS files with extension $WERCKER_MINIFY_JS_EXT in $WERCKER_MINIFY_BASE_DIR with arguments $WERCKER_MINIFY_YUI_ARGS and command $YUI_COMMAND"
-    
+
     find ${WERCKER_MINIFY_BASE_DIR} -iname "*.${WERCKER_MINIFY_JS_EXT}" -print0 | xargs -0 -t -n 1 -P "${WERCKER_MINIFY_THREADS}" -I filename ${YUI_COMMAND} ${WERCKER_MINIFY_YUI_ARGS} -o filename filename
 }
 
@@ -136,7 +136,7 @@ compress_PNG()
 {
     # minify all the PNG files
     echo "minifying PNG files in $WERCKER_MINIFY_BASE_DIR with arguments $WERCKER_MINIFY_PNG_ARGS"
-    
+
     find ${WERCKER_MINIFY_BASE_DIR} -iname "*.png" -print0 | xargs -0 -t -n 1 -P "${WERCKER_MINIFY_THREADS}" optipng ${WERCKER_MINIFY_PNG_ARGS}
 }
 
@@ -146,7 +146,7 @@ verify_java()
     if ! command_exists java; then
         echo "java not installed, installing..."
         update_sources
-        if command_exists apt-get; then      
+        if command_exists apt-get; then
             apt-get install -y openjdk-7-jre
         elif command_exists pacman; then
             pacman -S --noconfirm jre7-openjdk-headless
@@ -162,7 +162,7 @@ verify_curl()
     if ! command_exists curl; then
         echo "curl not installed, installing..."
         update_sources
-        if command_exists apt-get; then       
+        if command_exists apt-get; then
             apt-get install -y curl
         elif command_exists pacman; then
             pacman -S --noconfirm curl
@@ -176,13 +176,13 @@ verify_node()
 {
     # check if node is installed
     if ! command_exists node; then
-    
+
         verify_curl
-    
+
         # install node
         echo "node not installed, installing..."
         if command_exists apt-get; then
-    		curl -sL https://deb.nodesource.com/setup_0.12 | bash -
+            curl -sL https://deb.nodesource.com/setup_6.x | bash -
             apt-get install -y nodejs build-essential
         elif command_exists pacman; then
             pacman -S --noconfirm nodejs npm
@@ -206,9 +206,9 @@ do_PNG()
         else
             yum install -y optipng
         fi
-        
+
     fi
-    
+
     # verify optipng installation
     if ! command_exists html-minifier; then
         echo "optipng installation failed, not compressing PNG"
@@ -226,7 +226,7 @@ do_HTML()
         verify_node
         npm install html-minifier -g
     fi
-    
+
     # verify HTML minifier installation
     if ! command_exists html-minifier; then
         echo "html-minifier installation failed, not minifying HTML"
@@ -239,7 +239,7 @@ do_HTML()
 do_CSS_JS()
 {
     echo "installing yuicompressor..."
-    
+
     if (! command_exists yuicompressor) && (! command_exists yui-compressor); then
         update_sources
         if command_exists apt-get; then
@@ -250,9 +250,9 @@ do_CSS_JS()
             npm install yuicompressor -g
         fi
     fi
-    
+
     verify_YUI
-    
+
     if [ "$WERCKER_MINIFY_CSS" != "false" ]; then
         minify_CSS
     fi
@@ -263,15 +263,15 @@ do_CSS_JS()
 
 if check_branches; then
     set_variables
-    
+
     if [ "$WERCKER_MINIFY_HTML" != "false" ]; then
         do_HTML
     fi
-    
+
     if [ "$WERCKER_MINIFY_CSS" != "false" ] || [ "$WERCKER_MINIFY_JS" != "false" ] ; then
         do_CSS_JS
     fi
-    
+
     if [ "$WERCKER_MINIFY_PNG" != "false" ]; then
         do_PNG
     fi
